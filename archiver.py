@@ -546,19 +546,20 @@ class Archiver:
         self.generate_config()  # If it fails, abandon page
         self.page.generate_threads()
         self.page.rebuild_talkhead(dry=True)  # Raises an exception if it fails
-        if not self.config['archive'].startswith(self.page.title + "/"):
-            if not self.key_ok():
-                raise ArchiveSecurityError("Bad key: " + repr(self.config['key']))
-        time_machine = self.archive_threads()
-        try:
-            next(time_machine)  # Prepare the archive pages
-        except StopIteration:  # Don't archive a measly few threads
-            return
-        # Now let's pause execution for a bit
-        self.page.update(self.archives_touched)  # Assume that we won't fail
-        # Save the archives last (so that we don't fuck up if we can't edit the TP)
-        # Bugs won't cause a loss of data thanks to unarchive_threads()
-        next(time_machine)  # Continue archiving
+        if self.config['archive'] not in ("/dev/null", "None", "Nowhere", "none", "nowhere"):  # Don't post to an archive if these keywords are used
+            if not self.config['archive'].startswith(self.page.title + "/"):
+                if not self.key_ok():
+                    raise ArchiveSecurityError("Bad key: " + repr(self.config['key']))
+            time_machine = self.archive_threads()
+            try:
+                next(time_machine)  # Prepare the archive pages
+            except StopIteration:  # Don't archive a measly few threads
+                return
+            # Now let's pause execution for a bit
+            self.page.update(self.archives_touched)  # Assume that we won't fail
+            # Save the archives last (so that we don't fuck up if we can't edit the TP)
+            # Bugs won't cause a loss of data thanks to unarchive_threads()
+            next(time_machine)  # Continue archiving
 
 
 import unittest
